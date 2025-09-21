@@ -170,12 +170,12 @@ public class AssignNode {
                 System.out.println(";");
                 break;
             case INDEXED_EQ_EXPR:
-                System.out.print(leftId + "[\"" + indexKey + "\"] = ");
+                System.out.print(leftId + "['" + indexKey + "'] = ");
                 rhsExpr.print(0);
                 System.out.println(";");
                 break;
             case NEW_OBJECT:
-                System.out.print(leftId + " = new object(\"" + ctorKey + "\", ");
+                System.out.print(leftId + " = new object('" + ctorKey + "', ");
                 ctorExpr.print(0);
                 System.out.println(");");
                 break;
@@ -193,11 +193,11 @@ public class AssignNode {
                 rhsExpr.print(0);
                 break;
             case INDEXED_EQ_EXPR:
-                System.out.print(leftId + "[\"" + indexKey + "\"] = ");
+                System.out.print(leftId + "['" + indexKey + "'] = ");
                 rhsExpr.print(0);
                 break;
             case NEW_OBJECT:
-                System.out.print(leftId + " = new object(\"" + ctorKey + "\", ");
+                System.out.print(leftId + " = new object('" + ctorKey + "', ");
                 ctorExpr.print(0);
                 System.out.print(")");
                 break;

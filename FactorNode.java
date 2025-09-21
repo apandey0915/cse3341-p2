@@ -104,7 +104,7 @@ public class FactorNode {
                 System.out.print(id);
                 break;
             case INDEXED_ID:
-                System.out.print(id + "[\"" + strKey + "\"]");
+                System.out.print(id + "['" + strKey + "']");
                 break;
             case CONST:
                 System.out.print(constant);
