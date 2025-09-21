@@ -65,18 +65,14 @@ public class CondNode {
                 left.print(0);
                 break;
             case AND:
-                System.out.print("(");
-                left.print(0);
+                left.print(indent);
                 System.out.print(" and ");
                 right.print(0);
-                System.out.print(")");
                 break;
             case OR:
-                System.out.print("(");
-                left.print(0);
+                left.print(indent);
                 System.out.print(" or ");
                 right.print(0);
-                System.out.print(")");
                 break;
         }
     }

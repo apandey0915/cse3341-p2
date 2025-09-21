@@ -29,11 +29,16 @@ public class AssignNode {
         if (t == Core.LSQUARE) {
             scanner.nextToken();
 
-            if (scanner.currentToken() != Core.STRING) {
+            Core idxTok = scanner.currentToken();
+            if (idxTok == Core.STRING) {
+                indexKey = scanner.getString();
+                scanner.nextToken();
+            } else if (idxTok == Core.CONST || idxTok == Core.ID) {
+                if (idxTok == Core.CONST) { scanner.getConst(); } else { scanner.getId(); }
+                scanner.nextToken();
+            } else {
                 throw new ParserException("expected string inside []");
             }
-            indexKey = scanner.getString();
-            scanner.nextToken();
 
             if (scanner.currentToken() != Core.RSQUARE) {
                 throw new ParserException("expected ']'");
@@ -45,8 +50,16 @@ public class AssignNode {
             }
             scanner.nextToken();
 
+            if (scanner.currentToken() == Core.RPAREN) {
+                throw new ParserException("missing left parenthesis in expression");
+            }
+
             rhsExpr = new ExprNode();
             rhsExpr.parse(scanner);
+
+            if (scanner.currentToken() == Core.RPAREN) {
+                throw new ParserException("missing left parenthesis in expression");
+            }
 
             if (scanner.currentToken() != Core.SEMICOLON) {
                 throw new ParserException("expected ';' after assignment");
@@ -79,6 +92,11 @@ public class AssignNode {
             throw new ParserException("expected '=' or ':' in assignment");
         }
         scanner.nextToken();
+
+        if (scanner.currentToken() == Core.RPAREN) {
+            throw new ParserException("missing left parenthesis in expression");
+        }
+
 
         if (scanner.currentToken() == Core.NEW) {
             scanner.nextToken();
@@ -119,17 +137,20 @@ public class AssignNode {
 
             kind = Kind.NEW_OBJECT;
             return;
+        } else {
+            rhsExpr = new ExprNode();
+            rhsExpr.parse(scanner);
+            if (scanner.currentToken() == Core.RPAREN) {
+                throw new ParserException("missing left parenthesis in expression");
+            }
+
+            if (scanner.currentToken() != Core.SEMICOLON) {
+                throw new ParserException("expected ';' after assignment");
+            }
+            scanner.nextToken();
+
+            kind = Kind.ID_EQ_EXPR;
         }
-
-        rhsExpr = new ExprNode();
-        rhsExpr.parse(scanner);
-
-        if (scanner.currentToken() != Core.SEMICOLON) {
-            throw new ParserException("expected ';' after assignment");
-        }
-        scanner.nextToken();
-
-        kind = Kind.ID_EQ_EXPR;
     }
 
     public void checkSemantics(SymbolTable symbols) throws SemanticException {
