@@ -1,29 +1,35 @@
 import java.io.*;
 public class IfNode {
+    private enum Delim { SQUARE, PAREN, NONE }
     private CondNode cond;
     private StmtSeqNode thenPart;
-    private StmtSeqNode elsePart; // optional
+    private StmtSeqNode elsePart;
+    private Delim delim = Delim.NONE;
 
     public void parse(CoreScanner scanner) throws ParserException, IOException {
         if (scanner.currentToken() != Core.IF) throw new ParserException("expected if");
         scanner.nextToken();
 
-        // accept '[', '(', or bare condition
+        // detect delimiter style
         Core look = scanner.currentToken();
-        if (look == Core.LSQUARE || look == Core.LPAREN) {
-            Core close = (look == Core.LSQUARE) ? Core.RSQUARE : Core.RPAREN;
+        if (look == Core.LSQUARE) {
+            delim = Delim.SQUARE;
             scanner.nextToken();
-
             cond = new CondNode();
             cond.parse(scanner);
-
-            if (scanner.currentToken() != close) throw new ParserException("expected closing bracket/paren");
+            if (scanner.currentToken() != Core.RSQUARE) throw new ParserException("expected ']'");
             scanner.nextToken();
-        } else if (startsCondToken(look)) {
+        } else if (look == Core.LPAREN) {
+            delim = Delim.PAREN;
+            scanner.nextToken();
             cond = new CondNode();
             cond.parse(scanner);
+            if (scanner.currentToken() != Core.RPAREN) throw new ParserException("expected ')'");
+            scanner.nextToken();
         } else {
-            throw new ParserException("expected '[' or '(' or condition after if");
+            delim = Delim.NONE;
+            cond = new CondNode();
+            cond.parse(scanner);
         }
 
         if (scanner.currentToken() != Core.THEN) throw new ParserException("expected then");
@@ -59,28 +65,28 @@ public class IfNode {
     }
 
     public void print(int indent) {
-        indent(indent); System.out.print("if [");
+        indent(indent);
+        System.out.print("if ");
+        if (delim == Delim.SQUARE) System.out.print("[");
+        if (delim == Delim.PAREN)  System.out.print("(");
         cond.print(0);
-        System.out.println("] then");
+        if (delim == Delim.SQUARE) System.out.print("]");
+        if (delim == Delim.PAREN)  System.out.print(")");
+        System.out.println(" then");
+
         thenPart.print(indent + 2);
+
         if (elsePart != null) {
             indent(indent); System.out.println("else");
             elsePart.print(indent + 2);
         }
+
         indent(indent); System.out.println("end");
     }
 
     private static boolean startsStmt(Core tok) {
         return tok == Core.ID || tok == Core.IF || tok == Core.FOR || tok == Core.PRINT
             || tok == Core.READ || tok == Core.INTEGER || tok == Core.OBJECT;
-    }
-
-    // tokens that can start a *condition* via <cmpr> or nested cond:
-    private static boolean startsCondToken(Core tok) {
-        // NOT <cond> | ( <cond> ... ) | <cmpr> which begins with an <expr>
-        // <expr> can start with ID, CONST, LPAREN, ADD (unary +), SUBTRACT (unary -)
-        return tok == Core.NOT || tok == Core.LPAREN || tok == Core.ID
-            || tok == Core.CONST || tok == Core.ADD || tok == Core.SUBTRACT;
     }
 
     private static void indent(int n) { for (int i = 0; i < n; i++) System.out.print(" "); }
